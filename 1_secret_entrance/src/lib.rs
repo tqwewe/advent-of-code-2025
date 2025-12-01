@@ -32,6 +32,7 @@ pub fn find_password_part_2(mut dial: u8, rotations: &mut [Rotation]) -> u32 {
     zeros
 }
 
+/// A rotation instruction with a direction and amount.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Rotation {
     pub direction: Direction,
@@ -39,6 +40,15 @@ pub struct Rotation {
 }
 
 impl Rotation {
+    /// Parse a series of rotation instructions from a secret document.
+    pub fn parse_from_document(document: &str) -> Result<Vec<Rotation>, ParseRotationError> {
+        document
+            .trim()
+            .split('\n')
+            .map(Rotation::from_str)
+            .collect()
+    }
+
     /// Applies a rotation fully to a dial, returning the new dial.
     ///
     /// # Example
