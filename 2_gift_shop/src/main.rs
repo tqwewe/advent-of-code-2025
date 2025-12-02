@@ -17,6 +17,7 @@ fn main() {
 
                 for i in 1..(s.len() / 2) + 1 {
                     let rem = s.len() / i;
+                    // Comment this line out for part 2
                     if rem != 2 {
                         continue;
                     }
