@@ -3,7 +3,7 @@ use std::collections::HashSet;
 const INPUT: &str = include_str!("../input.txt");
 
 fn main() {
-    let ranges: Vec<_> = INPUT
+    let sum: u64 = INPUT
         .split(',')
         .map(|range| {
             let (min_str, max_str) = range.trim().split_once('-').unwrap();
@@ -11,32 +11,27 @@ fn main() {
             let max: u64 = max_str.parse().unwrap();
             min..=max
         })
-        .collect();
+        .fold(HashSet::<u64>::new(), |mut repeated_pats, range| {
+            for n in range {
+                let s = n.to_string();
 
-    let mut repeated_pats: HashSet<u64> = HashSet::new();
-    for range in ranges {
-        // let mut repeated_pats: HashSet<u64> = HashSet::new();
-        for n in range.clone() {
-            let s = n.to_string();
+                for i in 1..(s.len() / 2) + 1 {
+                    let rem = s.len() / i;
+                    if rem != 2 {
+                        continue;
+                    }
 
-            for i in 1..(s.len() / 2) + 1 {
-                if !s.len().is_multiple_of(i) {
-                    continue;
-                }
-
-                let rem = s.len() / i;
-                if rem != 2 {
-                    continue;
-                }
-
-                let pat = &s[..i];
-                if pat.repeat(rem) == s {
-                    repeated_pats.insert(s.parse().unwrap());
+                    let pat = &s[..i];
+                    if pat.repeat(rem) == s {
+                        repeated_pats.insert(s.parse().unwrap());
+                    }
                 }
             }
-        }
-    }
 
-    let sum = repeated_pats.into_iter().sum::<u64>();
+            repeated_pats
+        })
+        .into_iter()
+        .sum::<u64>();
+
     println!("{sum}");
 }
