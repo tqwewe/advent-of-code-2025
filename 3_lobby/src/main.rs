@@ -1,10 +1,12 @@
-use lobby::{part_1, part_2};
+use lobby::{parse_battery_banks, part_1, part_2, part_2_kye};
 
 const INPUT: &str = include_str!("../input.txt");
 
 fn main() {
+    let banks: Vec<&str> = INPUT.trim().split('\n').collect();
     println!("{}", part_1(INPUT));
-    println!("{}", part_2(INPUT));
+    println!("{}", part_2(&banks));
+    println!("{}", part_2_kye(&parse_battery_banks(INPUT)));
 }
 
 // Lol

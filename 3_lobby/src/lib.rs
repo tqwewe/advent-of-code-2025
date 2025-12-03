@@ -1,3 +1,5 @@
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
 pub fn part_1(input: &str) -> u32 {
     let banks: Vec<&str> = input.trim().split('\n').collect();
 
@@ -19,30 +21,48 @@ pub fn part_1(input: &str) -> u32 {
     total_joltage
 }
 
-pub fn part_2(input: &str) -> u64 {
-    let banks: Vec<&str> = input.trim().split('\n').collect();
+pub fn part_2(banks: &[&str]) -> u64 {
+    banks
+        .par_iter()
+        .map(|bank| {
+            let mut next_index = 0;
+            let mut joltage = 0;
+            for remaining in (1..13).rev() {
+                let b = &bank[next_index..];
+                let (index, next_highest) = b
+                    .char_indices()
+                    .take(b.len() - remaining + 1)
+                    .max_by(|(a_idx, a_char), (b_idx, b_char)| {
+                        a_char.cmp(b_char).then(a_idx.cmp(b_idx).reverse())
+                    })
+                    .unwrap();
+                next_index += index + 1;
+                joltage = joltage * 10 + next_highest.to_digit(10).unwrap() as u64;
+            }
 
-    let mut total_joltage = 0;
-    for bank in banks {
-        let mut next_index = 0;
-        let mut s = String::with_capacity(12);
-        for remaining in (1..13).rev() {
-            let b = &bank[next_index..];
-            let (index, next_highest) = b
-                .char_indices()
+            joltage
+        })
+        .sum()
+}
+
+pub fn part_2_bank(bank: &str) -> u64 {
+    let mut next_index = 0;
+    let mut joltage = 0;
+    for remaining in (1..13).rev() {
+        let b = &bank[next_index..];
+        let (index, next_highest) = unsafe {
+            b.char_indices()
                 .take(b.len() - remaining + 1)
                 .max_by(|(a_idx, a_char), (b_idx, b_char)| {
                     a_char.cmp(b_char).then(a_idx.cmp(b_idx).reverse())
                 })
-                .unwrap();
-            next_index += index + 1;
-            s.push(next_highest);
-        }
-
-        total_joltage += s.parse::<u64>().unwrap();
+                .unwrap_unchecked()
+        };
+        next_index += index + 1;
+        joltage = joltage * 10 + next_highest.to_digit(10).unwrap() as u64;
     }
 
-    total_joltage
+    joltage
 }
 
 pub fn part_1_kye(input: &str) -> u32 {
@@ -52,45 +72,41 @@ pub fn part_1_kye(input: &str) -> u32 {
         let l = bank[..bank.len() - 1].iter().max().unwrap();
         let l_idx = bank.iter().position(|battery| battery == l).unwrap();
         let r = bank[(l_idx + 1)..bank.len()].iter().max().unwrap();
-        bank_batteries.push((l * 10) + r);
+        bank_batteries.push((*l as u32 * 10) + *r as u32);
     }
 
     bank_batteries.iter().sum()
 }
 
-pub fn part_2_kye(input: &str) -> u64 {
-    let banks = parse_battery_banks(input);
+pub fn part_2_kye(banks: &[Vec<u32>]) -> u64 {
+    banks.par_iter().map(|bank| part_2_kye_bank(bank)).sum()
+}
 
-    let mut bank_batteries = Vec::<u64>::default();
-    for bank in banks {
-        let mut remaining_batteries = bank;
-        let mut batteries = Vec::with_capacity(12);
-        for _ in 0..12 {
-            if remaining_batteries.is_empty() {
-                break;
-            }
-
-            let needed = 12 - batteries.len();
-            let max_idx = remaining_batteries.len() - needed + 1;
-
-            let l = remaining_batteries[..max_idx].iter().max().unwrap();
-            let l_idx = remaining_batteries
-                .iter()
-                .position(|battery| battery == l)
-                .unwrap();
-
-            batteries.push(*l);
-            remaining_batteries = remaining_batteries[(l_idx + 1)..].to_vec();
+#[inline]
+pub fn part_2_kye_bank(mut bank: &[u32]) -> u64 {
+    let mut joltage = 0;
+    for batteries_len in 0..12 {
+        if bank.is_empty() {
+            break;
         }
 
-        bank_batteries.push(
-            batteries
+        let needed = 12 - batteries_len;
+        let max_idx = bank.len() - needed + 1;
+
+        // SAFETY: bank[..max_idx] should have at least one item
+        let (l_idx, l) = unsafe {
+            bank[..max_idx]
                 .iter()
-                .fold(0, |acc, &digit| acc * 10 + digit as u64),
-        );
+                .enumerate()
+                .max_by(|(a_idx, a), (b_idx, b)| a.cmp(b).then(b_idx.cmp(a_idx)))
+                .unwrap_unchecked()
+        };
+
+        joltage = joltage * 10 + *l as u64;
+        bank = &bank[(l_idx + 1)..];
     }
 
-    bank_batteries.iter().sum()
+    joltage
 }
 
 pub fn parse_battery_banks(input: &str) -> Vec<Vec<u32>> {
