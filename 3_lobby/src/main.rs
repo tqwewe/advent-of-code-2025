@@ -2,8 +2,7 @@ const INPUT: &str = include_str!("../input.txt");
 
 fn main() {
     part_1();
-    part_2(); // 39889142628112 too low
-    // 131499139411474 too low
+    part_2();
 }
 
 fn part_1() {
