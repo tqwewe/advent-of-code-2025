@@ -1,55 +1,10 @@
+use lobby::{part_1, part_2};
+
 const INPUT: &str = include_str!("../input.txt");
 
 fn main() {
-    part_1();
-    part_2();
-}
-
-fn part_1() {
-    let banks: Vec<&str> = INPUT.split('\n').collect();
-
-    let mut total_joltage = 0;
-    for bank in banks {
-        let mut highest_joltage = 0;
-        for i in 0..bank.len() {
-            for j in (i + 1)..bank.len() {
-                let joltage: u64 = format!("{}{}", &bank[i..i + 1], &bank[j..j + 1])
-                    .parse()
-                    .unwrap();
-                highest_joltage = highest_joltage.max(joltage);
-            }
-        }
-
-        total_joltage += highest_joltage;
-    }
-
-    println!("{total_joltage}");
-}
-
-fn part_2() {
-    let banks: Vec<&str> = INPUT.trim().split('\n').collect();
-
-    let mut total_joltage = 0;
-    for bank in banks {
-        let mut next_index = 0;
-        let mut s = String::with_capacity(12);
-        for remaining in (1..13).rev() {
-            let b = &bank[next_index..];
-            let (index, next_highest) = b
-                .char_indices()
-                .take(b.len() - remaining + 1)
-                .max_by(|(a_idx, a_char), (b_idx, b_char)| {
-                    a_char.cmp(b_char).then(a_idx.cmp(b_idx).reverse())
-                })
-                .unwrap();
-            next_index += index + 1;
-            s.push(next_highest);
-        }
-
-        total_joltage += s.parse::<u64>().unwrap();
-    }
-
-    println!("{total_joltage}");
+    println!("{}", part_1(INPUT));
+    println!("{}", part_2(INPUT));
 }
 
 // Lol
