@@ -114,3 +114,89 @@ pub fn part_2(input: &str) -> u32 {
 
     total_taken
 }
+
+pub fn part_1_kye(input: &str) -> u32 {
+    let grid: Vec<Vec<_>> = input
+        .trim()
+        .split('\n')
+        .map(|row| row.chars().collect())
+        .collect();
+
+    let (n, m) = (grid.len(), grid[0].len());
+
+    let mut accessible = 0;
+    for y in 0..n {
+        for x in 0..m {
+            if grid[y][x] != '@' {
+                continue;
+            }
+
+            let neighbours = count_neighbours(&grid, x, y, n, m);
+            if neighbours < 4 {
+                accessible += 1
+            }
+        }
+    }
+    accessible
+}
+
+pub fn part_2_kye(input: &str) -> u64 {
+    let mut grid: Vec<Vec<_>> = input
+        .trim()
+        .split('\n')
+        .map(|row| row.chars().collect())
+        .collect();
+
+    let (n, m) = (grid.len(), grid[0].len());
+
+    let mut accessible = 0;
+    loop {
+        let mut cur = 0;
+        for y in 0..n {
+            for x in 0..m {
+                if grid[y][x] != '@' {
+                    continue;
+                }
+
+                let neighbours = count_neighbours(&grid, x, y, n, m);
+                if neighbours < 4 {
+                    grid[y][x] = '.';
+                    cur += 1
+                }
+            }
+        }
+        if cur > 0 {
+            accessible += cur;
+        } else {
+            break;
+        }
+    }
+    accessible
+}
+
+fn count_neighbours(grid: &[Vec<char>], x: usize, y: usize, n: usize, m: usize) -> u32 {
+    const DIRS: [(i32, i32); 8] = [
+        (1, 0),
+        (1, -1),
+        (0, -1),
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, 1),
+        (1, 1),
+    ];
+    let mut neighbours = 0;
+    for (d_x, d_y) in DIRS {
+        let new_x = x as i32 + d_x;
+        let new_y = y as i32 + d_y;
+
+        if new_x < 0 || new_x >= m as i32 || new_y < 0 || new_y >= n as i32 {
+            continue;
+        }
+
+        if grid[new_y as usize][new_x as usize] == '@' {
+            neighbours += 1;
+        }
+    }
+    neighbours
+}
