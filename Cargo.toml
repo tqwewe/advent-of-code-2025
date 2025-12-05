@@ -5,4 +5,5 @@ members = [
   "./2_gift_shop",
   "./3_lobby",
   "./4_printing_department",
+  "./5_cafeteria",
 ]
